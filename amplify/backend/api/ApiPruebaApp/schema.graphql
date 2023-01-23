@@ -1,0 +1,159 @@
+type Display {
+  resolution: String
+  screenSize: String
+  ppi: String
+}
+
+type Camera {
+  primary: Int
+  secondary: Int
+  resolution: String
+}
+
+type Battery {
+  capacity: Int
+  duration: Int
+  usb: String
+}
+
+type Idd {
+  root: String
+  suffixes: [String]
+}
+
+type PostalCode {
+  format: String
+  regex: String
+}
+
+type Blog @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  posts: [Post] @hasMany
+}
+
+type Post @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String!
+  blog: Blog @belongsTo
+  comments: [Comment] @hasMany
+}
+
+type Comment @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  post: Post @belongsTo
+  content: String!
+}
+
+type AImageCarousel @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  image: String!
+  description: String
+  route: String
+}
+
+type ABrand @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  image: AWSURL
+  phones: [APhone] @hasMany(indexName: "byBrand", fields: ["id"])
+}
+
+type AProductType @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  image: AWSURL
+  phones: [APhone] @hasMany(indexName: "byProductType", fields: ["id"])
+}
+
+type APhone @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  images: [String]
+  maxPrice: Float
+  minPrice: Float
+  lastPrice: Float
+  suggestedPrice: Float
+  reviews: [String]
+  ratings: [Int]
+  avgRating: Float
+  brandID: ID! @index(name: "byBrand")
+  brand: ABrand @belongsTo(fields: ["brandID"])
+  productTypeID: ID! @index(name: "byProductType")
+  productType: AProductType @belongsTo(fields: ["productTypeID"])
+}
+
+type ACarrier @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  image: String!
+  countryID: ID! @index(name: "byCountry")
+  country: ACountry @belongsTo(fields: ["countryID"])
+}
+
+type ACountry @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  officialName: String
+  nativeName: String
+  idd: Idd
+  googleMaps: String
+  timeZone: [String!]
+  flag: String
+  postalCode: PostalCode
+  carriers: [ACarrier] @hasMany(indexName: "byCountry", fields: ["id"])
+  languages: [ALanguage] @manyToMany(relationName: "ACountriesLanguages")
+  currencies: [ACurrencie] @manyToMany(relationName: "ACountriesCurrencies")
+}
+
+type ALanguage @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  abbreviation: String!
+  countries: [ACountry] @manyToMany(relationName: "ACountriesLanguages")
+}
+
+type ACurrencie @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  code: String!
+  name: String!
+  symbol: String!
+  countries: [ACountry] @manyToMany(relationName: "ACountriesCurrencies")
+}
+
+type AGuidePhone @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  description: String
+  width: Float
+  height: Float
+  depth: Float
+  weight: Float
+  display: Display
+  camera: Camera
+  battery: Battery
+  colors: [AColor] @manyToMany(relationName: "AGuidePhonesColors")
+  storages: [AStorage] @manyToMany(relationName: "AGuidePhonesStorages")
+  opSysyemID: ID @index(name: "byOpSystem")
+  opSystem: AOpSystem @belongsTo(fields: ["opSysyemID"])
+}
+
+type AColor @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  hexCode: String!
+  guidePhones: [AGuidePhone] @manyToMany(relationName: "AGuidePhonesColors")
+}
+
+type AStorage @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  numberGB: Int!
+  guidePhones: [AGuidePhone] @manyToMany(relationName: "AGuidePhonesStorages")
+}
+
+type AOpSystem @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String!
+  image: String
+  guidePhones: [AGuidePhone] @hasMany(indexName: "byOpSystem", fields: ["id"])
+}
+ 
